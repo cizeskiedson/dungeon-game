@@ -1,8 +1,19 @@
+import queue
 import sys
+import random
 ### CONSTANTES ###
 
 NUM_AVENTUREIROS_FACIL = 20; NUM_AVENTUREIROS_MEDIO = 12; NUM_AVENTUREIROS_DIFICIL = 6
 FACIL = 1; MEDIO = 2; DIFICIL = 3
+NUM_MONSTROS_PADRAO = 5
+
+MAGO_NUM_INIMIGOS = 4; MAGO_DANO_TIPO = 'magico'; MAGO_DANO_VALOR = 4
+DRUIDA_NUM_INIMIGOS = 3; DRUIDA_DANO_TIPO = 'veneno'; DRUIDA_DANO_VALOR = 5
+GUERREIRO_NUM_INIMIGOS = 2; GUERREIRO_DANO_TIPO = 'fisico'; GUERREIRO_DANO_VALOR = 6
+
+DRAGAO_PONTOS_VIDA = 12; DRAGAO_TIPO_RESISTENCIA = 'magico'; DRAGAO_VALOR_RESISTENCIA = 50
+MORTO_VIVO_PONTOS_VIDA = 8; MORTO_VIVO_TIPO_RESISTENCIA = 'veneno'; MORTO_VIVO_VALOR_RESISTENCIA = 50
+ORC_PONTOS_VIDA = 6; ORC_TIPO_RESISTENCIA = 'fisico'; ORC_VALOR_RESISTENCIA = 50
 
 ##################
 
@@ -11,6 +22,8 @@ FACIL = 1; MEDIO = 2; DIFICIL = 3
 max_aventureiros = {FACIL: NUM_AVENTUREIROS_FACIL, MEDIO: NUM_AVENTUREIROS_MEDIO, DIFICIL: NUM_AVENTUREIROS_DIFICIL} # Número de aventureiros por dificuldade
 
 ###################
+
+### EXCEÇÕES ###
 
 class excecaoNumAventureirosUltrapassado(Exception):
     pass
@@ -21,29 +34,82 @@ class excecaoNumAventureirosInsuf(Exception):
 class excecaoDificuldadeInvalida(Exception):
     pass
 
-# ## Classe Monstro
-# class Monstro:
-#     def __init__(self, vida):
-#         self.vida = vida
+################
 
-# ##Subclasses de Monstro
-# class Dragao(Monstro):
+### Classes ### 
 
-# class MortoVivo(Monstro):
+# Classe Monstro
+class Monstro:
+   def __init__(self, vida, tipo_resistencia, valor_resistencia):
+       self.vida = vida
+       self.tipo_resistencia = tipo_resistencia
+       self.valor_resistencia = valor_resistencia
 
-# class Orc(Monstro):
+# Subclasses de Monstro
+class Dragao(Monstro):
+    def __init__(self):
+        super().__init__(DRAGAO_PONTOS_VIDA, DRAGAO_TIPO_RESISTENCIA, DRAGAO_VALOR_RESISTENCIA)
 
-# #Classe Aventureiro
-# class Aventureiro:
-#     def __init__(self, ):
+class MortoVivo(Monstro):
+    def __init__(self):
+        super().__init__(MORTO_VIVO_PONTOS_VIDA, MORTO_VIVO_TIPO_RESISTENCIA, MORTO_VIVO_VALOR_RESISTENCIA)
+
+class Orc(Monstro):
+    def __init__(self):
+        super().__init__(ORC_PONTOS_VIDA, ORC_TIPO_RESISTENCIA, ORC_VALOR_RESISTENCIA)
 
 
-# #Subclasses de Aventureiro
-# class Druida(Aventureiro):
+## Classe Aventureiro
+class Aventureiro:
+    def __init__(self, num_inimigos, tipo_dano, valor_dano):
+        self.num_inimigos = num_inimigos
+        self.tipo_dano = tipo_dano
+        self.valor_dano = valor_dano
 
-# class Mago(Aventureiro):
+#Subclasses de Aventureiro
+class Druida(Aventureiro):
+    def __init__(self, num_inimigos, tipo_dano, valor_dano):
+        super().__init__(DRUIDA_NUM_INIMIGOS, DRUIDA_DANO_TIPO, DRUIDA_DANO_VALOR)
 
-# class Guerreiro(Aventureiro):
+class Mago(Aventureiro):
+    def __init__(self, num_inimigos, tipo_dano, valor_dano):
+        super().__init__(MAGO_NUM_INIMIGOS, MAGO_DANO_TIPO, MAGO_DANO_VALOR)
+
+class Guerreiro(Aventureiro):
+    def __init__(self, num_inimigos, tipo_dano, valor_dano):
+        super().__init__(GUERREIRO_NUM_INIMIGOS, GUERREIRO_DANO_TIPO, GUERREIRO_DANO_VALOR)
+
+# Classe masmorra
+class Masmorra():
+    
+    def __init__(self, nivel_masmorra):
+        self.nivel_masmorra = nivel_masmorra
+        self.num_monstros = int(NUM_MONSTROS_PADRAO + (3 * nivel_masmorra))
+        self.fila_monstros = self.preencherFilaMonstros(self.num_monstros)
+    
+    def preencherFilaMonstros(self, numero_monstros):
+        random.seed(numero_monstros)
+        fila_monstros = queue.Queue(maxsize = numero_monstros)
+        print("Fila criada!")
+        while(fila_monstros.qsize() < numero_monstros):
+            num_monstro = random.randrange(1, 4)
+            
+            if(num_monstro == 1):
+                monstro = Dragao()
+            elif(num_monstro == 2):
+                monstro = Orc()
+            else:
+                monstro = MortoVivo()
+            
+            fila_monstros.put(monstro)
+            
+            print("Monstro da classe {} inserido!".format(monstro.__class__))
+
+        print("Fila com {} monstros criada!".format(fila_monstros.qsize))
+        return fila_monstros
+
+
+###############
 
 def main():
     ### Definições ###
@@ -55,7 +121,22 @@ def main():
     dificuldade_escolhida = selecionarDificuldade()
     time_aventureiros = selecionarTimeAventureiros(dificuldade_escolhida)
 
-    print("Agora só continuar!")
+    nivel = 1
+    aventureiros_restantes = max_aventureiros[dificuldade_escolhida]    
+    
+    while(aventureiros_restantes > 0):
+        iniciarMasmorra(time_aventureiros, aventureiros_restantes, nivel)
+        nivel += 1
+
+        # PARADA TESTES #
+        aventureiros_restantes = 0
+        #################
+
+def iniciarMasmorra(time_aventureiros, aventureiros_restantes, nivel):
+    masmorra = Masmorra(nivel)
+    
+
+    
 
 def selecionarDificuldade():
     while True:
