@@ -79,18 +79,16 @@ class Guerreiro(Aventureiro):
     def __init__(self, num_inimigos, tipo_dano, valor_dano):
         super().__init__(GUERREIRO_NUM_INIMIGOS, GUERREIRO_DANO_TIPO, GUERREIRO_DANO_VALOR)
 
-# Classe masmorra
-class Masmorra():
-    
-    def __init__(self, nivel_masmorra):
-        self.nivel_masmorra = nivel_masmorra
-        self.num_monstros = int(NUM_MONSTROS_PADRAO + (3 * nivel_masmorra))
+# Classe andar masmorra
+class NivelMasmorra():
+    def __init__(self, nivel_atual):
+        self.nivel_masmorra = nivel_atual
+        self.num_monstros = int(NUM_MONSTROS_PADRAO + (3 * nivel_atual))
         self.fila_monstros = self.preencherFilaMonstros(self.num_monstros)
     
     def preencherFilaMonstros(self, numero_monstros):
         random.seed(numero_monstros)
         fila_monstros = queue.Queue(maxsize = numero_monstros)
-        print("Fila criada!")
         while(fila_monstros.qsize() < numero_monstros):
             num_monstro = random.randrange(1, 4)
             
@@ -102,10 +100,7 @@ class Masmorra():
                 monstro = MortoVivo()
             
             fila_monstros.put(monstro)
-            
-            print("Monstro da classe {} inserido!".format(monstro.__class__))
-
-        print("Fila com {} monstros criada!".format(fila_monstros.qsize))
+        print("Fila com {} monstros criada!".format(fila_monstros.qsize()))
         return fila_monstros
 
 
@@ -120,20 +115,25 @@ def main():
     
     dificuldade_escolhida = selecionarDificuldade()
     time_aventureiros = selecionarTimeAventureiros(dificuldade_escolhida)
-
-    nivel = 1
-    aventureiros_restantes = max_aventureiros[dificuldade_escolhida]    
+    num_aventureiros_restantes = max_aventureiros[dificuldade_escolhida]    
     
-    while(aventureiros_restantes > 0):
-        iniciarMasmorra(time_aventureiros, aventureiros_restantes, nivel)
-        nivel += 1
+    iniciarMasmorra(time_aventureiros, num_aventureiros_restantes)
+
+    
+def iniciarMasmorra(time_aventureiros, num_aventureiros_restantes):
+    nivel_atual = 1
+    while(num_aventureiros_restantes > 0):
+        enfrentarNivel(time_aventureiros, num_aventureiros_restantes, nivel_atual)
+        nivel_atual += 1
 
         # PARADA TESTES #
-        aventureiros_restantes = 0
+        num_aventureiros_restantes = 0
         #################
 
-def iniciarMasmorra(time_aventureiros, aventureiros_restantes, nivel):
-    masmorra = Masmorra(nivel)
+
+def enfrentarNivel(time_aventureiros, num_aventureiros_restantes, nivel_atual):
+    nivel = NivelMasmorra(nivel_atual)
+    
     
 
     
