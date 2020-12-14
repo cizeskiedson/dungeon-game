@@ -93,7 +93,7 @@ class Guerreiro(Aventureiro):
 class NivelMasmorra():
     def __init__(self, nivel_atual):
         self.nivel_masmorra = nivel_atual
-        self.num_monstros = int(NUM_MONSTROS_PADRAO + (3 * nivel_atual))
+        self.num_monstros = int(3 + nivel_atual)
         self.fila_monstros = self.preencherFilaMonstros(self.num_monstros)
     
     def preencherFilaMonstros(self, numero_monstros):
